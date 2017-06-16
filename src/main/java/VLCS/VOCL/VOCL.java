@@ -11,11 +11,16 @@ import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Remove;
 
 public class VOCL {
-    public enum VagueLabelMethod {RANDOM, CLUSTER}
+
+    // Paper said RandomVagueLabeling was more accurate however Cluster based
+    // vague labeling seemed more interesting so we implemented that one.
+    public enum VagueLabelMethod {
+        RANDOM /* TODO */, CLUSTER
+    }
 
     private VagueLabelMethod label_method;
-    private final int num_clusters = 20;
-    private int k = 10;
+    private final int num_clusters = 20; // Specified in paper
+    private int k = 10; // Specified in paper
     private int class_idx;
     private int attr_idx;
 
@@ -31,7 +36,7 @@ public class VOCL {
         this.local = new LocalWeighting(10); // Specify number of folds
         this.global = new GlobalWeighting();
         this.class_idx = class_idx;
-        this.attr_idx = attr_idx; // TODO probability shifting
+        this.attr_idx = attr_idx; // TODO make dynamic for probability shifting
     }
 
     /**
@@ -65,7 +70,7 @@ public class VOCL {
      * Main Pseudo code method from paper (Figure 5.)
      *
      * @param chunk The chunk to test for the previous ensemble and the chunk to train for the next classifier
-     * @return      The predict chunk accuracy
+     * @return The predict chunk accuracy
      * @throws Exception
      */
     private double processChunk(Instances chunk) throws Exception {
@@ -79,8 +84,7 @@ public class VOCL {
         attr_chunk.setClassIndex(attr_chunk.numAttributes() - 1);
 
         // We can classify as ensemble contains trained classifiers
-        if (ensemble.size() > 0)
-        {
+        if (ensemble.size() > 0) {
             predicted_accuracy = evaluateChunkAccuracy(attr_chunk);
         }
 
@@ -89,7 +93,7 @@ public class VOCL {
         float[] Wx = calculateUnifiedWeights(WLx, WGx);
 
         MOAOneClassClassifier Li = trainNewClassifier(attr_chunk, Wx);
-        // TODO weight classifiers
+
         if (ensemble.size() > 0) {
             assert ensemble.size() != k : "ensemble size must be == k - 1";
             float[] Gl = weightClassifiers(Li, Wx, attr_chunk, PSi);
@@ -106,10 +110,17 @@ public class VOCL {
         return predicted_accuracy;
     }
 
+    /**
+     * Returns the ensemble prediction from a given instance.
+     *
+     * @param test The instance to predict.
+     * @return The Prediction containing the actual and predicted results.
+     * @throws Exception
+     */
     public Prediction getPrediction(Instance test) throws Exception {
 
         double actual = test.classValue();
-        double [] dist = ensemble.getVotesForInstance(test);
+        double[] dist = ensemble.getVotesForInstance(test);
         if (test.classAttribute().isNominal()) {
             return new NominalPrediction(actual, dist, test.weight());
         } else {
@@ -120,8 +131,9 @@ public class VOCL {
     /**
      * For each instance it checks whether it predicts it should be in the class or not and then
      * calculates its overall accuracy for the classifier on the given chunk.
+     *
      * @param chunk The chunk to predict
-     * @return      The overall accuracy
+     * @return The overall accuracy
      * @throws Exception
      */
     private double evaluateChunkAccuracy(Instances chunk) throws Exception {
@@ -131,17 +143,17 @@ public class VOCL {
             Prediction pred = getPrediction(instance);
 
             // If it's not part of class then ensure it predicted it wasn't.
-            if ((int)pred.actual() != class_idx && (int)pred.predicted() != class_idx) {
+            if ((int) pred.actual() != class_idx && (int) pred.predicted() != class_idx) {
                 correct_predictions++;
             }
 
             // If its part of the class then sure it predicted it was.
-            if ((int)pred.actual() == class_idx && (int)pred.predicted() == class_idx) {
+            if ((int) pred.actual() == class_idx && (int) pred.predicted() == class_idx) {
                 correct_predictions++;
             }
         }
 
-        return (double)correct_predictions / (double)chunk.size();
+        return (double) correct_predictions / (double) chunk.size();
     }
 
     private float[] weightClassifiers(MOAOneClassClassifier Li, float[] Wx, Instances chunk, int[] labels) throws Exception {
@@ -161,6 +173,16 @@ public class VOCL {
         return Gl;
     }
 
+    /**
+     * Compares oj classifier with o1 in order to create weight for oj classifier.
+     *
+     * @param ol     The classifier to compare against
+     * @param oj     The classifier to weight
+     * @param chunk  The dataset
+     * @param labels The labels identifying whether and instance is positively labeled or unlabeled.
+     * @return The oj classifier weight
+     * @throws Exception
+     */
     private float pairWiseAgreement(MOAOneClassClassifier ol, MOAOneClassClassifier oj, Instances chunk, int[] labels) throws Exception {
 
         int unlabeled_set_size = 0;
@@ -197,7 +219,7 @@ public class VOCL {
 
         float[] Wx = new float[WLx.length];
 
-        System.out.println("UNIFIED_WEIGHTING");
+        System.err.println("UNIFIED_WEIGHTING");
 
         for (int i = 0; i < Wx.length; i++) {
             if (WLx[i] + WGx[i] > 0) {
@@ -206,7 +228,7 @@ public class VOCL {
             } else {
                 Wx[i] = 0.f;
             }
-            System.out.println("LocalW: " + WLx[i] + " GlobalW: " + WGx[i] + " UnifiedW: " + Wx[i]);
+            System.err.println("LocalW: " + WLx[i] + " GlobalW: " + WGx[i] + " UnifiedW: " + Wx[i]);
         }
 
         return Wx;
@@ -214,13 +236,14 @@ public class VOCL {
 
     /**
      * Trains a new classifier using unified weights.
-     *
+     * <p>
      * NOTE: Had to use weka's buildClassifier instead of trainOnInstance so that I could
-     *
+     * <p>
      * Trains a new classifier given the unified weights.
-     * @param chunk             The testing data set
-     * @param unified_weights   The weights to train it by
-     * @return                  The trained classifier
+     *
+     * @param chunk           The testing data set
+     * @param unified_weights The weights to train it by
+     * @return The trained classifier
      * @throws Exception
      */
     private MOAOneClassClassifier trainNewClassifier(Instances chunk, float[] unified_weights) throws Exception {

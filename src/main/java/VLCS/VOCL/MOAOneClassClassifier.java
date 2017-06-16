@@ -8,9 +8,10 @@ import weka.core.Instance;
 import weka.core.Instances;
 
 /**
- * Created by xavier on 8/06/17.
- *
- * This class allows us to use the OneClassClassifier in WEKA in MOA.
+ * This class allows us to use the OneClassClassifier from Weka in Moa.
+ * Inherits the WEKAClassifier from Moa to allow us to access based members
+ * such that we can replicate functionality. Implement Moa Classifier so we can
+ * use it with other Moa Ensembles.
  */
 public class MOAOneClassClassifier extends WEKAClassifier implements Classifier {
 
@@ -52,17 +53,19 @@ public class MOAOneClassClassifier extends WEKAClassifier implements Classifier 
 
     /**
      * WEKA specific method that's unimplemented in MOA.
+     *
      * @param label
      */
     public void setTargetClassLabel(String label) {
-        ((OneClassClassifier)this.classifier).setTargetClassLabel(label);
+        ((OneClassClassifier) this.classifier).setTargetClassLabel(label);
     }
 
     /**
      * WEKA specific method that's unimplemented in MOA.
+     *
      * @return
      */
     public String getTargetClassLabel() {
-        return ((OneClassClassifier)this.classifier).getTargetClassLabel();
+        return ((OneClassClassifier) this.classifier).getTargetClassLabel();
     }
 }

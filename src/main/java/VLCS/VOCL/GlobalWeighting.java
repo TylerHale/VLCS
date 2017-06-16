@@ -5,13 +5,16 @@ import weka.core.Instances;
 
 import java.util.Queue;
 
+/**
+ * Global Weighting Formula method from paper (Eq 2.)
+ */
 public class GlobalWeighting {
 
     public float[] getWeights(Instances chunk, OneClassClassifierEnsemble ensemble) throws Exception {
 
         float[] weights = new float[chunk.size()];
 
-        System.out.println("GLOBAL_WEIGHTING");
+        System.err.println("GLOBAL_WEIGHTING");
 
         Queue<MOAOneClassClassifier> classifiers = ensemble.getClassifiers();
 
@@ -35,7 +38,7 @@ public class GlobalWeighting {
             if (classifiers.size() > 0) {
                 weights[i] /= classifiers.size();
             }
-            System.out.println("% Predict_positive: " + weights[i]);
+            System.err.println("% Predict_positive: " + weights[i]);
         }
 
         return weights;

@@ -71,7 +71,6 @@ public class ClusterVagueLabeling extends VagueLabeling {
 
         // Calculate the number of labels per cluster to label/set as positive
         for (Entry<Float, Integer> e : sorted_clusters) {
-            System.out.println(e.getKey() + " " + e.getValue() + " size: " + cluster_sizes[e.getValue()]);
             int size = cluster_sizes[e.getValue()];
             int x = pos_labels + size <= max_pos_labels ? size : max_pos_labels - pos_labels;
             labels_per_cluster[e.getValue()] = x;

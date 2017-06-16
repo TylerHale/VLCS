@@ -14,6 +14,11 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
 
+/**
+ * One Class Weighting Voting Ensemble to apply the same Weighted Voting
+ * logic from the WeightedMajorityAlgorithm classifier however with our
+ * specified weights along with our Moa wrapped Weka OneClassClassifier.
+ */
 public class OneClassClassifierEnsemble implements Classifier {
 
     private Queue<MOAOneClassClassifier> ensemble;
@@ -59,7 +64,7 @@ public class OneClassClassifierEnsemble implements Classifier {
         DoubleVector combinedVote = new DoubleVector();
         int i = 0;
         for (MOAOneClassClassifier classifier : ensemble) {
-            if(this.ensembleWeights[i] > 0.0D) {
+            if (this.ensembleWeights[i] > 0.0D) {
                 try {
                     // Use distributionForInstance instead of getVotesForInstance as we have trained
                     // each classifier via buildClassifier()

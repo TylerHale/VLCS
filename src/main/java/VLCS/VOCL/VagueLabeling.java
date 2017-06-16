@@ -3,7 +3,7 @@ package VLCS.VOCL;
 import weka.core.Instances;
 
 /**
- * Created by xavier on 7/06/17.
+ * Interface for VagueLabeling methods.
  */
 public abstract class VagueLabeling {
     protected float alpha = 0.3f;

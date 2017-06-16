@@ -23,11 +23,11 @@ public class LocalWeighting {
     /**
      * Local Weighting Pseudo code method from paper (Figure 6.)
      *
-     * @param chunk
-     * @param labels
-     * @param attribute_idx
-     * @param class_idx
-     * @return
+     * @param chunk         The dataset to train and test from
+     * @param labels        Identifies which instances in the chunk are positively labeled or unlabeled
+     * @param attribute_idx The attribute to predict from
+     * @param class_idx     The class to try classify
+     * @return The weights of each instance in the chunk.
      * @throws Exception
      */
     public float[] getWeights(Instances chunk, int[] labels, int attribute_idx, int class_idx) throws Exception {
@@ -62,7 +62,7 @@ public class LocalWeighting {
                 if (labels[p] == 1) {
                     // If Classifies p as positive then set weight to 1.0 else 0.5;
                     weights[p] = ((int) index == class_idx) ? 1.0f : 0.5f;
-                    was_pos_predicted[p] = ((int)index == class_idx) ? 1 : 0; // TODO remove
+                    was_pos_predicted[p] = ((int) index == class_idx) ? 1 : 0; // TODO remove
                     // Update for unlabelled samples that are Classified as positive
                 } else if (labels[p] == 0 && (int) index == class_idx) {
                     // Predict unlabelled instance using all <= i OneClassClassifiers to calculate weight
@@ -79,7 +79,7 @@ public class LocalWeighting {
                     assert weights[p] >= 0 && weights[p] <= 1 : "normalized weight must be between 0-1.";
                 }
 
-                System.out.println("Is pos: " + labels[p] + " Was_pos_pred: " + was_pos_predicted[p] + " WLx[p]: " + weights[p]);
+                System.err.println("Is pos: " + labels[p] + " Was_pos_pred: " + was_pos_predicted[p] + " WLx[p]: " + weights[p]);
             }
         }
 
